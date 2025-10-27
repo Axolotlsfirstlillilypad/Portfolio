@@ -276,6 +276,7 @@ This project demonstrates the ability to predict rental prices using structured 
 ---
 
 ### Code Walkthrough & Detailed Discussion
+Data is from https://www.kaggle.com/datasets/airbnb/seattle Airbnb Seattle dataset. 
 
 #### Packages
 ```r
@@ -284,7 +285,9 @@ library(janitor)
 library(caret)
 library(randomForest)
 ``` 
-We load tidyverse for data manipulation, visualization, and wrangling, and janitor for cleaning column names and ensuring consistency. Caret and randomforest make it easier to coax the model into a usable form.
+We load tidyverse for data manipulation, visualization, and wrangling, and janitor for cleaning column names and ensuring consistency. Caret and randomforest make it easier to coax the model into a usable form. It is further possible to download directly from a website by listing the path URL, including the https.
+e.g data <- read_csv("https://raw.githubusercontent.com/datasets/covid-19/master/data/countries-aggregated.csv"). One challenge I encountered along the way was the file paths itself. Yes, like many people I used the File Explorer's address bar to get the path (click to the file you want, then select the entire line ), but one must be mindful to replace the backslashes with forward slashes, lest R refuse to read it properly. 
+
 ```r
 library(readr)
 airbnb <- read_csv(unz("C:/Users/User/Downloads/archive (1).zip", "Listings.csv"))
@@ -293,6 +296,14 @@ We read the Airbnb dataset directly from a ZIP file. This can be done by using u
 ```r
 glimpse(airbnb)
 summary(airbnb)
+It would appear the data is either numerical or character. There are NA values in the dataset, but these either comprise a proportionally small amount of the total ids, or are so great that it probably would be for the best to just drop the pertinent columns as there is simply too little information to extrapolate. 
+
+
+
+airbnb_model<-drop_na(airbnb)
+summary(airbnb_model)
+Quick check verifies that the NAs have indeed been discarded. 
+
 ```
 We examine data types and summary statistics.
 glimpse() shows which variables are numeric vs categorical, while summary() highlights price spread, outliers, and skewness. Also it suses out the NA variables, which we drop. 
@@ -300,6 +311,7 @@ glimpse() shows which variables are numeric vs categorical, while summary() high
 airbnb_model <- drop_na(airbnb)
 summary(airbnb_model)
 ```
+Following rounds of testing with respect to resultant RMSE, p=0.8 yielded the lowest, and therefore the best choice. 
 ```r
 set.seed(123)
 trainIndex <- createDataPartition(airbnb_model$price, p = 0.8, list = FALSE)
@@ -332,17 +344,20 @@ cat("Random Forest RMSE:", rf_rmse, "\n")
 ```
 We use a scatter plot to depict the discrete points to check if the actual and predicted are close. They are, so great. 
 ```r
-results <- tibble(
+#this creates a data frame with actual and test price we can plot to generate the precision statistics. we can set the name of the columns by typing the names here.
+results <- data.frame(
   actual = test$price,
   predicted = pred_rf
 )
-
+# in ggplot, aes tells the program what you want to use as the variables. then point creates points, abline creates a diagonal line across the x-y plane, labs allows you
+#to specify labels                                                                                    
 ggplot(results, aes(x = actual, y = predicted)) +
   geom_point(alpha = 0.5) +
   geom_abline(color = "red", linetype = "dashed") +
   labs(title = "Actual vs Predicted Prices",
        x = "Actual Price", y = "Predicted Price")
 ```
+The resulting graph is roughly linear around a red line drawn to represent the regression. A good sign that accompanies our good regression at less than 20. 
 
 Next Steps:
 
@@ -375,8 +390,34 @@ We load shiny for creating interactive web apps, plotly for interactive plots, t
 
 # Load dataset
 ```r
+#reads in zip file as above
 covid <- read_csv(unz("C:/Users/User/Downloads/archive (2).zip", "owid-covid-data.csv"))
+glimpse(covid)
+summary(covid)
 ```
+
+
+Exploratory Data Analysis (EDA) - COVID-19 Dataset
+
+The dataset provides an extensive record of the global COVID-19 pandemic, with data spanning over 350,000 entries and 67 different attributes. These attributes offer a broad perspective on how the virus spread and impacted various countries, as well as the socio-economic factors that might have influenced those outcomes.
+
+Among the most crucial columns in the dataset are the country-specific identifiers, including the ISO code (such as "AFG" for Afghanistan), the continent in which the country resides, and the location name, which is simply the name of the country itself. Additionally, the date column tracks the temporal evolution of the data, showing how the pandemic unfolded over time for each country.
+
+The core of the dataset is made up of COVID-19 related data, including the total cases and new cases reported, as well as total deaths and new deaths associated with the virus. It also includes testing metrics, such as total tests and new tests, giving insight into the testing capacity and frequency in different nations. Additionally, the dataset provides vaccination data, such as total vaccinations and the number of people vaccinated, which is key to understanding the global effort to combat the pandemic.
+
+Alongside these health metrics, the dataset contains socio-economic indicators, such as GDP per capita, population density, and median age. These variables provide a broader context for the pandemic, allowing for insights into how wealth, population size, and demographic factors might have affected the impact and response to COVID-19 in different countries.
+
+Upon inspecting the dataset, it’s clear that missing values are a significant issue. For several important metrics, like total cases, total deaths, and total tests, missing values are prevalent. This suggests that data reporting may have been inconsistent across countries, or that certain data points were not available during certain periods. For instance, some countries might not have had the testing infrastructure to provide accurate counts, or vaccination data might be missing due to variations in reporting practices.
+
+In terms of descriptive statistics, an initial glance at the total cases column reveals a broad range of values. Some countries reported only a handful of cases in the early stages of the pandemic, while others, like the United States and India, saw millions of reported cases. The dataset shows that a few countries with the highest numbers of cases contribute to the vast majority of global infections. Meanwhile, for deaths, a similar disparity exists, where some countries have a much higher death toll compared to others. This uneven distribution raises important questions about the factors influencing case severity, testing availability, and reporting accuracy.
+
+The dataset also provides an interesting insight into vaccination progress. For many countries, the vaccination rollout began in late 2020 or early 2021, and the dataset captures the cumulative number of people vaccinated over time. This, combined with testing data, can help us analyze the correlation between testing rates, vaccination rates, and the overall number of cases and deaths.
+
+The socio-economic data introduces additional layers to the analysis. For example, countries with higher GDP per capita may have had more resources available for testing, medical care, and vaccination campaigns, potentially resulting in lower mortality rates. On the other hand, countries with higher population densities might have experienced faster spread due to the difficulty of maintaining social distancing in crowded areas.
+
+Finally, understanding the missing values is a crucial step. Many columns, especially those related to government responses (such as stringency_index, which tracks the strictness of policies like lockdowns and travel restrictions), show gaps, likely due to inconsistent data collection or reporting. Addressing these gaps is essential for ensuring that any analysis based on the dataset is both accurate and reliable.
+
+In conclusion, the dataset is a rich resource that provides valuable insights into the COVID-19 pandemic's trajectory across the world. However, careful consideration of missing data and outliers is necessary to ensure that the analysis produces meaningful and actionable conclusions. The next steps would involve handling the missing data appropriately, exploring correlations between variables, and conducting a deeper analysis of how different countries responded to the pandemic in relation to their socio-economic and demographic characteristics.
 
 
 We import the global COVID-19 dataset from a zip file from the covid dataset on Kaggle. This ensures the data is version-controlled and reproducible.
@@ -393,7 +434,7 @@ covid_clean <- covid %>%
   )
 ```
 
-We clean the dataset by keeping only relevant columns and removing aggregate "World" entries to focus on individual countries.
+We clean the dataset by removing data columns with too many NA values to extrapolate and removing aggregate "World" entries to focus on individual countries.
 ymd(date) converts strings to Date objects. Missing values in new_cases and new_deaths are replaced with zero because zeros are meaningful for days without new cases or deaths.
 
 # Time series plot for selected countries
@@ -473,78 +514,46 @@ This project showcases the ability to forecast future sales using historical sal
 
 ```r
 # Load required libraries
-library(tidyverse)
+library(tibble)
 library(lubridate)
 library(forecast)
-library(tsibble)
-library(fable)
+library(ggplot2)
 ```
 We load tidyverse for data manipulation, lubridate for handling dates, forecast for classical forecasting models, and tsibble & fable for tidy time series analysis.
 
-# Load dataset
-We load tidyverse for data manipulation, lubridate for handling dates, forecast for classical forecasting models, and tsibble & fable for tidy time series analysis.
-
-# Load dataset
+#  Generate synthetic monthly sales data
 ```r
-sales <- read_csv("C:/Users/User/Downloads/sales.csv")
+set.seed(123)
+sales <- data.frame(
+  month = seq(ymd("2018-01-01"), ymd("2022-12-01"), by = "months"),
+  sales = round(runif(length(month), 1000, 5000))
+)
+```
+# Convert to time series object for easier time series plotting
+```r
+sales_ts <- ts(sales$sales, start = c(2018, 1), frequency = 12)
+```
+# Fit ARIMA model
+```r
+fit <- auto.arima(sales_ts)
 ```
 
-We import historical sales data. The dataset contains a date column and corresponding sales figures.
-
-# Data cleaning and preparation
+# Forecast next 12 months
 ```r
-sales_clean <- sales %>%
-  mutate(date = ymd(date)) %>%
-  arrange(date)
+forecasted <- forecast(fit, h = 12)
 ```
-
-Convert the date column to a Date type using ymd(). Sorting ensures the time series is in chronological order, which is critical for forecasting models.
-
-# Convert to tsibble
-```r
-sales_ts <- sales_clean %>%
-  as_tsibble(index = date)
-```
-
-We transform the dataset into a tsibble object to leverage tidy time series tools, ensuring that the date column is the index.
-
-# Plot historical sales
-```r
-ggplot(sales_ts, aes(x = date, y = sales)) +
-  geom_line(color = "blue") +
-  labs(title = "Historical Sales", x = "Date", y = "Sales") +
-  theme_minimal()
-```
-
-
-Visualize historical sales to detect trends, seasonality, and anomalies. The line plot provides intuition about underlying patterns.
-
-# Forecast using ARIMA model
-```r
-model_arima <- sales_ts %>%
-  model(ARIMA(sales))
-forecast_arima <- model_arima %>% forecast(h = "12 months")
-```
-
-
-We fit an ARIMA model because sales exhibit trend and possible seasonality. ARIMA handles autocorrelation and generates robust forecasts.
 
 # Plot forecast
 ```r
-forecast_arima %>%
-  autoplot(sales_ts) +
-  labs(title = "Sales Forecast (ARIMA)", x = "Date", y = "Sales") +
+autoplot(forecasted) +
+  ggtitle("Sales Forecast") +
+  xlab("Year") +
+  ylab("Sales") +
   theme_minimal()
 ```
+Visualize the forecast along with historical data. This allows stakeholders to see expected sales and confidence intervals. Overall the plot does not illustrate any long term trend up or down in terms of sales, barring seasonal fluctuations. Apparently the product sells better in summer, which suggests it caters to leisure consumers. Further, a noticeable dip during 2020-2021 can be discerned, which could be attributed to COVID. 
+![COVID Chart](assets/images/covid-chart.png)
 
-Visualize the forecast along with historical data. This allows stakeholders to see expected sales and confidence intervals.
-
-# Evaluate forecast accuracy
-```r
-accuracy(forecast_arima, sales_ts)
-```
-
-We check accuracy metrics such as RMSE, MAE, and MAPE. RMSE is appropriate because the target (sales) is numeric, and large deviations are penalized, aligning with business impact.
 
 Next Steps:
 
@@ -667,13 +676,10 @@ pred <- predict(rf_model, test)
 confusionMatrix(pred, test$Churn)
 ```
 Random Forest is chosen because it handles categorical variables, missing values, and interactions well. Accuracy, sensitivity, and specificity are assessed via the confusion matrix.
+The synthetic dataset has 20% churn (Yes) and 80% no churn (No).
 
-
-```r
-# Feature importance
-varImpPlot(rf_model)
-```
-Highlights the most influential features for churn, informing retention strategies.
+This is imbalanced — “No” is the majority class. Even a dumb model that predicts everyone “No” would already get ~80% accuracy.
+So accuracy alone is not enough. We need something that measures how many churners our model actually caught, so F1-score makes the most sense. We import the random forest model, then put in parameters ntree=500 as a baseline. It ought to be more than enough anyway.
 
 
 
