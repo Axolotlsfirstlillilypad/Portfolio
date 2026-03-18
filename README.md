@@ -83,9 +83,12 @@ Portfolio-Repository/
 ├── Project9_HRAttritionXGBoost/
 │   └── scripts/
 │       └── hr_attrition_xgboost.R
-└── Project10_CreditCardFraud/
-    └── scripts/
-        └── creditcard_fraud_xgboost.R
+├── Project10_CreditCardFraud/
+│   └── scripts/
+│       └── creditcard_fraud_xgboost.R
+└── Java Projects
+    └── Guessing Game
+    └── Bank App
 
 ```
 ---
@@ -1137,4 +1140,373 @@ The **Sales Performance Dashboard** is a comprehensive Power BI report designed 
 ## Project Outcome
 
 This Sales Performance Dashboard enables executives and managers to quickly assess overall sales health, identify top-performing regions, products, and salespeople, and make informed decisions based on historical and projected sales data.
+
+
+
+
+
+
+## Java Projects
+
+# Guessing Game (Java)
+
+## Overview
+
+This program is a console-based number guessing game written in Java. The player selects a difficulty level, and the program generates a random number within a defined range. The player must guess the number within a limited number of attempts. The program also tracks statistics such as total games played, total wins, and the best score achieved.
+
+---
+
+## Program Structure and Logic
+
+The program begins by importing two essential classes: `Scanner` and `Random`. The `Scanner` class is used to handle user input from the console, while the `Random` class is used to generate the secret number for the game.
+
+The main class, `GuessingGame`, contains the `main` method, which serves as the entry point of the program. Inside this method, a `Scanner` object and a `Random` object are created to enable input handling and random number generation.
+
+Several variables are declared at the start to manage game state and statistics. These include `maximum` to define the upper bound of the guessing range, `totalGames` and `totalWins` to track performance, `bestScore` to store the highest score achieved, and a boolean variable `keepPlaying` that controls whether the game continues running.
+
+The core of the program is a `while` loop that continues executing as long as `keepPlaying` is true. This loop allows the user to play multiple rounds without restarting the program.
+
+At the start of each round, the user is prompted to select a difficulty level: easy, medium, or hard. The input is converted to lowercase to ensure consistent comparison. A `switch` statement is then used to set the maximum number based on the selected difficulty. Easy sets the range to 1–10, medium to 1–50, and hard to 1–100. If the user enters an invalid option, the program defaults to medium difficulty.
+
+Once the difficulty is set, the program generates a random number between 1 and the selected maximum. This number becomes the secret number that the player must guess.
+
+The program then determines the maximum number of attempts allowed, which is set to half of the maximum range. It also initializes variables to track the number of attempts made and whether the player has won the game.
+
+An integer array is created to store the player's guesses, allowing the program to display a history of guesses at the end of the round. A separate counter keeps track of how many guesses have been recorded.
+
+The guessing process is handled using a `do-while` loop. This ensures that the player is prompted for at least one guess. During each iteration, the program increments the attempt counter and asks the user to input a guess.
+
+The input is read as a string and then converted into an integer using `Integer.parseInt()`. A `try-catch` block is used to handle invalid input, such as non-numeric values. If an exception occurs, the program informs the user and continues to the next iteration without counting the invalid input as a valid guess.
+
+The program then checks whether the guess falls within the valid range. If the guess is out of bounds, the user is prompted to try again.
+
+Valid guesses are stored in the `guessHistory` array, and the history counter is incremented. The program then compares the guess with the secret number. If the guess is correct, the player wins and the loop terminates. If the guess is too high or too low, the program provides appropriate feedback.
+
+The loop continues until the player either guesses the correct number or runs out of attempts.
+
+After the loop ends, the program checks whether the player has won. If not, it reveals the correct number.
+
+Next, the program prints the guess history. It iterates through the stored guesses and indicates whether each guess was too high, too low, or correct.
+
+The score is then calculated. If the player wins, the score is based on how many attempts were remaining, rewarding more efficient guessing. If the player loses, the score is zero.
+
+The program updates the overall statistics by incrementing the total number of games played. If the player won, the total wins counter is also incremented. The best score is updated if the current score exceeds the previous highest score.
+
+A menu is then displayed, giving the player three options: play again, view statistics, or quit. If the player chooses to view statistics, the program displays the total number of games, total wins, win rate (calculated as a percentage), and best score. The player is then asked whether they want to continue playing.
+
+Based on the user’s choice, the `keepPlaying` variable is updated, which determines whether the main loop continues or terminates.
+
+When the player chooses to quit, the loop ends and the program prints a final summary of total games and total wins. Finally, the `Scanner` object is closed to release system resources.
+
+---
+
+## Summary
+
+This program demonstrates the use of fundamental Java concepts, including loops, conditional statements, exception handling, arrays, and basic state management. It is structured to allow repeated gameplay while maintaining persistent statistics across rounds.
+
+---
+
+## How to Run
+
+Compile the program using:
+
+javac GuessingGame.java
+
+Then run it using:
+
+java GuessingGame
+
+---
+## Notes:
+
+It is fine to define the variables outside of the loop, but everything that is part of the game session, from the prompts at the beginning to the scoring at the end must be placed within the while loop to allow the code to execute more than once. It is this repetition that allows the replayability of the game. 
+
+Be sure to check which constants you are incrementing, know what the variables represent. If you accidentally use the wrong variable you may end up inadvertently increasing the games twice instead of increasing the total wins, or vice versa.
+
+Lastly, Increment the game sessions when they happen, not at the end of all the games.
+
+
+
+# BankApp (WIP)
+
+This program is a simple Java banking simulation that demonstrates object-oriented programming concepts such as inheritance, polymorphism, constructors, and user input handling. It allows users to create different types of bank accounts and perform basic operations.
+
+---
+
+## Import Statement
+
+`import java.util.Scanner;`
+
+This line imports the `Scanner` class from Java’s utility package. The `Scanner` is used to read user input from the console.
+
+---
+
+## Class Declaration
+
+`public class BankApp {`
+
+This declares the main class of the program named `BankApp`. This is where the program execution begins.
+
+---
+
+## Main Method
+
+`public static void main(String[] args) {`
+
+This is the entry point of the Java application. The JVM starts execution from this method.
+
+---
+
+## Scanner Initialization
+
+`Scanner scanner = new Scanner(System.in);`
+
+A `Scanner` object is created to read input from the keyboard (`System.in`).
+
+---
+
+## Replay Control Variable
+
+`char choice = 'y';`
+
+This variable controls whether the program should repeat. It is initialized to `'y'` so the loop runs at least once.
+
+---
+
+## While Loop for Replay
+
+`while (choice == 'y' || choice == 'Y') {`
+
+This loop ensures the program continues running as long as the user enters `'y'` or `'Y'` when prompted.
+
+---
+
+## Savings Account Input
+
+```
+System.out.print("Enter Savings Account Number: ");
+String savAccNum = scanner.nextLine();
+```
+
+Prompts the user to enter a savings account number and stores it as a `String`.
+
+```
+System.out.print("Enter Savings Account Name: ");
+String savName = scanner.nextLine();
+```
+
+Prompts for the account holder’s name.
+
+```
+System.out.print("Enter Initial Balance: ");
+double savBalance = scanner.nextDouble();
+```
+
+Reads the initial balance as a `double`.
+
+```
+System.out.print("Enter Interest Rate: ");
+double interestRate = scanner.nextDouble();
+```
+
+Reads the interest rate.
+
+`scanner.nextLine();`
+Clears the input buffer to prevent issues when switching from numeric input to string input.
+
+---
+
+## Savings Account Object Creation
+
+`SavingsAccount savings = new SavingsAccount(savAccNum, savName, savBalance, interestRate);`
+
+Creates a `SavingsAccount` object using the user-provided values.
+
+---
+
+## Checking Account Input
+
+Similar steps are repeated for the checking account:
+
+* Account number (`String`)
+* Account name (`String`)
+* Balance (`double`)
+* Overdraft limit (`double`)
+
+Each value is read from user input.
+
+`scanner.nextLine();` is again used to clear the buffer.
+
+---
+
+## Checking Account Object Creation
+
+`CheckingAccount checking = new CheckingAccount(chkAccNum, chkName, chkBalance, overdraft);`
+
+Creates a `CheckingAccount` object with the provided inputs.
+
+---
+
+## Basic Account Input
+
+```
+System.out.print("Enter Basic Account Number: ");
+String basAccNum = scanner.nextLine();
+
+System.out.print("Enter Basic Account Name: ");
+String basName = scanner.nextLine();
+```
+
+Reads account number and name for a basic account.
+
+---
+
+## Basic Account Object Creation
+
+`BankAccountWithConstructors basic = new BankAccountWithConstructors(basAccNum, basName);`
+
+Creates a basic bank account object.
+
+---
+
+## Display Total Accounts
+
+`System.out.println("\nTotal accounts: " + BankAccountWithConstructors.getTotalAccounts());`
+
+Prints the total number of accounts created. This likely uses a static variable shared across all instances.
+
+---
+
+## Polymorphism Demonstration
+
+```
+BankAccountWithConstructors ref1 = savings;
+BankAccountWithConstructors ref2 = checking;
+```
+
+These lines demonstrate polymorphism by assigning subclass objects (`SavingsAccount`, `CheckingAccount`) to superclass references.
+
+---
+
+## Display Account Information
+
+```
+ref1.displayInfo();
+ref2.displayInfo();
+```
+
+Calls the `displayInfo()` method on both accounts. The correct method implementation is chosen at runtime (method overriding).
+
+---
+
+## Transaction Testing
+
+```
+savings.deposit(500);
+```
+
+Adds money to the savings account.
+
+```
+savings.withdraw(1400);
+savings.withdraw(1000);
+```
+
+Attempts withdrawals, potentially testing limits or validation.
+
+```
+checking.withdraw(600);
+checking.withdraw(300, "Rent");
+```
+
+Demonstrates method overloading in the checking account class.
+
+---
+
+## Apply Interest
+
+`savings.applyInterest();`
+
+Applies interest to the savings account balance.
+
+---
+
+## Reference Comparison
+
+```
+BankAccountWithConstructors ref3 = ref1;
+```
+
+Assigns another reference to the same object as `ref1`.
+
+```
+System.out.println(ref1 == ref3);
+System.out.println(ref1 == ref2);
+```
+
+Checks whether references point to the same object in memory.
+
+---
+
+## Bank Summary
+
+```
+System.out.println("Total Accounts: " + BankAccountWithConstructors.getTotalAccounts());
+System.out.println("Total Deposits: $" + BankAccountWithConstructors.getTotalDeposits());
+```
+
+Displays overall statistics, likely maintained using static variables.
+
+---
+
+## Replay Prompt
+
+```
+System.out.print("Do you want to run again? (y/n): ");
+choice = scanner.next().charAt(0);
+```
+
+Prompts the user to decide whether to repeat the program. Reads a single character.
+
+`scanner.nextLine();`
+Clears the buffer again.
+
+---
+
+## End of Loop
+
+The loop repeats if the user enters `'y'` or `'Y'`.
+
+---
+
+## Scanner Closure
+
+`scanner.close();`
+
+Closes the scanner to free system resources.
+
+---
+
+## Program Termination Message
+
+`System.out.println("Program ended.");`
+
+Displays a message indicating the program has finished execution.
+
+---
+
+## Summary
+
+This program demonstrates:
+
+* User input handling with `Scanner`
+* Object creation using constructors
+* Inheritance and polymorphism
+* Method overloading and overriding
+* Use of static variables and methods
+* Loop control for repeated execution
+
+It serves as a foundational example of building an interactive Java console application.
+
+
 
