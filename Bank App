@@ -1,0 +1,90 @@
+import java.util.Scanner;
+
+public class BankApp {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        char choice = 'y';
+
+        while (choice == 'y' || choice == 'Y') {
+
+            // --- Savings Account Input ---
+            System.out.print("Enter Savings Account Number: ");
+            String savAccNum = scanner.nextLine();
+
+            System.out.print("Enter Savings Account Name: ");
+            String savName = scanner.nextLine();
+
+            System.out.print("Enter Initial Balance: ");
+            double savBalance = scanner.nextDouble();
+
+            System.out.print("Enter Interest Rate: ");
+            double interestRate = scanner.nextDouble();
+            scanner.nextLine(); // clear buffer
+
+            SavingsAccount savings = new SavingsAccount(savAccNum, savName, savBalance, interestRate);
+
+            // --- Checking Account Input ---
+            System.out.print("\nEnter Checking Account Number: ");
+            String chkAccNum = scanner.nextLine();
+
+            System.out.print("Enter Checking Account Name: ");
+            String chkName = scanner.nextLine();
+
+            System.out.print("Enter Initial Balance: ");
+            double chkBalance = scanner.nextDouble();
+
+            System.out.print("Enter Overdraft Limit: ");
+            double overdraft = scanner.nextDouble();
+            scanner.nextLine(); // clear buffer
+
+            CheckingAccount checking = new CheckingAccount(chkAccNum, chkName, chkBalance, overdraft);
+
+            // --- Basic Account Input ---
+            System.out.print("\nEnter Basic Account Number: ");
+            String basAccNum = scanner.nextLine();
+
+            System.out.print("Enter Basic Account Name: ");
+            String basName = scanner.nextLine();
+
+            BankAccountWithConstructors basic =
+                    new BankAccountWithConstructors(basAccNum, basName);
+
+            // --- Existing Logic ---
+            System.out.println("\nTotal accounts: " + BankAccountWithConstructors.getTotalAccounts());
+
+            BankAccountWithConstructors ref1 = savings;
+            BankAccountWithConstructors ref2 = checking;
+
+            System.out.println("\nAccount Details");
+            ref1.displayInfo();
+            System.out.println();
+            ref2.displayInfo();
+
+            System.out.println("\nWithdrawal Test");
+            savings.deposit(500);
+            savings.withdraw(1400);
+            savings.withdraw(1000);
+
+            checking.withdraw(600);
+            checking.withdraw(300, "Rent");
+
+            savings.applyInterest();
+
+            BankAccountWithConstructors ref3 = ref1;
+            System.out.println("\nref1 == ref3? " + (ref1 == ref3));
+            System.out.println("ref1 == ref2? " + (ref1 == ref2));
+
+            System.out.println("\nBank Summary");
+            System.out.println("Total Accounts: " + BankAccountWithConstructors.getTotalAccounts());
+            System.out.println("Total Deposits: $" + BankAccountWithConstructors.getTotalDeposits());
+
+            // --- Replay Option ---
+            System.out.print("\nDo you want to run again? (y/n): ");
+            choice = scanner.next().charAt(0);
+            scanner.nextLine(); // clear buffer
+        }
+
+        scanner.close();
+        System.out.println("Program ended.");
+    }
+}
