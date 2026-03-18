@@ -1,0 +1,194 @@
+import java.util.Scanner;
+import java.util.Random;
+
+/**
+ * GuessingGame
+ * -------------
+ * A console-based number guessing game where:
+ * - The player selects a difficulty level
+ * - A random number is generated
+ * - The player tries to guess within limited attempts
+ * - Stats like total games, wins, and best score are tracked
+ */
+public class GuessingGame {
+    public static void main(String[] args) {
+
+        // Scanner for user input
+        Scanner scanner = new Scanner(System.in);
+
+        // Random number generator
+        Random random = new Random();
+
+        // Game settings and statistics
+        int maximum;          // Upper bound of number range
+        int totalGames = 0;   // Total games played
+        int totalWins = 0;    // Total wins
+        int bestScore = 0;    // Highest score achieved
+        boolean keepPlaying = true; // Controls replay loop
+
+        // Main game loop (runs until player chooses to quit)
+        while (keepPlaying) {
+            System.out.println("** Guess the number! **");
+
+            // Difficulty selection
+            System.out.print("Select difficulty (Easy/Medium/Hard):");
+            String difficulty = scanner.nextLine().toLowerCase();
+
+            // Set range based on difficulty
+            switch (difficulty) {
+                case "easy":
+                    maximum = 10;
+                    System.out.println("Number is within 1 thru 10");
+                    break;
+                case "medium":
+                    maximum = 50;
+                    System.out.println("Number is within 1 thru 50");
+                    break;
+                case "hard":
+                    maximum = 100;
+                    System.out.println("Number is within 1 thru 100");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice. Defaulting to medium.");
+                    maximum = 50;
+                    break;
+            }
+
+            // Generate random secret number
+            int secretnumber = random.nextInt(maximum) + 1;
+            System.out.println("Secret number is between 1 and  " + maximum);
+
+            // Set attempt limit (half of range)
+            int maxAttempts = maximum / 2;
+            int attempts = 0;
+            boolean hasWon = false;
+
+            int guess = 0;
+
+            // Array to store guess history
+            int[] guessHistory = new int[maxAttempts];
+            int historycount = 0;
+
+            // Game loop (continues until win or attempts exhausted)
+            do {
+                attempts++;
+                System.out.print("\nAttempt " + attempts + "/" + maxAttempts + " — Enter your guess: ");
+                String input = scanner.nextLine();
+
+                // Validate numeric input
+                try {
+                    guess = Integer.parseInt(input);
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid number! Please enter a valid integer.");
+                    continue;
+                }
+
+                // Check if guess is within valid range
+                if (guess < 1 || guess > maximum) {
+                    System.out.println("Out of range! Guess again!");
+                    continue;
+                }
+
+                // Store valid guess in history
+                guessHistory[historycount] = guess;
+                historycount++;
+
+                // Compare guess with secret number
+                if (guess == secretnumber) {
+                    hasWon = true;
+                    System.out.println("You won! You guess it in " + +attempts + " attempts!");
+                } else if (guess > secretnumber) {
+                    System.out.println("Too high!");
+                } else {
+                    System.out.println("Too low!");
+                }
+
+            } while (!hasWon && attempts < maxAttempts);
+
+            // If player loses
+            if (!hasWon) {
+                System.out.println("\n Game Over! The number was " + secretnumber);
+            }
+
+            // Display guess history with feedback
+            System.out.println("*** Guess history ***");
+            for (int i = 0; i < historycount; i++) {
+                String direction;
+                if (guessHistory[i] < secretnumber) {
+                    direction = "too low";
+                } else if (guessHistory[i] > secretnumber) {
+                    direction = "too high";
+                } else {
+                    direction = "Correct!";
+                }
+                System.out.println("Guess " + (i + 1) + ": " + guessHistory[i] + " (" + direction + ")");
+            }
+
+            // Calculate score
+            int score;
+            if (hasWon){
+                score = (maxAttempts - attempts + 1) * 100;
+            } else {
+                score = 0;
+            }
+
+            System.out.println("\nFinal score: " + score + "points");
+
+            // Update stats
+            totalGames++;
+            System.out.println("\n Game number #" + totalGames);
+
+            if (hasWon){
+                totalWins++;
+            }
+
+            if (score > bestScore){
+                bestScore = score;
+            }
+
+            // Menu options
+            System.out.println("Menu");
+            System.out.println("1. Play Again");
+            System.out.println("2. View Stats");
+            System.out.println("3. Quit");
+
+            String choice = scanner.nextLine();
+
+            // Handle menu choice
+            switch (choice) {
+                case "1":
+                    // Loop continues automatically
+                    break;
+
+                case "2":
+                    // Display stats
+                    System.out.println("Games played: " + totalGames);
+                    System.out.println("Wins: " + totalWins);
+                    System.out.println("Win rate: " + (totalWins * 100 / totalGames) + "%");
+                    System.out.println("Best score: " + bestScore);
+
+                    // Ask if user wants to continue
+                    System.out.println("Play again? (yes/no):");
+                    String again = scanner.nextLine();
+                    keepPlaying = again.toLowerCase().equals("yes");
+                    break;
+
+                case "3":
+                    // Exit game
+                    keepPlaying = false;
+                    break;
+
+                default:
+                    System.out.println("Invalid choice. Playing again.");
+                    break;
+            }
+        }
+
+        // Final summary
+        System.out.println("\nThanks for playing! Final stats:");
+        System.out.println("Total Games: " + totalGames + "|Total Wins: " + totalWins);
+
+        scanner.close();
+    }
+}
