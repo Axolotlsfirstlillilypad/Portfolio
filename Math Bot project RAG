@@ -1,0 +1,107 @@
+# Symbolic Math Toolkit (SymPy-based)
+
+A lightweight Python utility built with `sympy` for symbolic mathematics, matrix operations, and simple string analysis.
+
+---
+
+## Features
+
+### Expression Handling
+- Normalize math expressions (`√`, `^`, `ln` to SymPy format)
+- Evaluate symbolic expressions safely
+
+### Calculus
+- Compute derivatives
+- Compute integrals
+
+### Matrix Operations
+- Addition
+- Multiplication
+- Determinant
+- Inverse
+- Transpose
+- Eigenvalues
+
+### Utility Function
+- Count occurrences of a letter in a word (case-insensitive)
+
+---
+
+## Installation
+
+Ensure Python is installed, then install SymPy:
+
+```bash
+pip install sympy
+```
+
+---
+
+## Usage
+
+```python
+import sympy as sp
+from your_script import evaluate_expression, derivative, integral
+
+print(evaluate_expression("2 + 3 * 4"))   # 14
+print(derivative("x^3 + 2*x"))           # 3*x**2 + 2
+print(integral("sin(x)"))                # -cos(x)
+```
+
+---
+
+## Functions
+
+### normalize(expr: str) -> str
+Converts user-friendly math symbols into SymPy-compatible syntax.
+
+### evaluate_expression(expr: str)
+Evaluates a mathematical expression safely.
+
+### derivative(expr: str, var="x")
+Returns the derivative of the expression with respect to the given variable.
+
+### integral(expr: str, var="x")
+Returns the indefinite integral of the expression.
+
+---
+
+## Matrix Operations
+
+### parse_matrix(mat)
+Converts a list into a SymPy Matrix.
+
+### matrix_operation(operation, matrices)
+Supported operations:
+- "add"
+- "multiply"
+- "determinant"
+- "inverse"
+- "transpose"
+- "eigenvalues"
+
+Example:
+
+```python
+matrix_operation("add", [[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+```
+
+---
+
+## Utility
+
+### count_letter(word, letter)
+Counts how many times a letter appears in a word (case-insensitive).
+
+---
+
+## Error Handling
+
+- Invalid expressions return "Invalid expression."
+- Unknown matrix operations return "Unknown matrix operation."
+
+---
+
+## License
+
+This project is free to use and modify.
