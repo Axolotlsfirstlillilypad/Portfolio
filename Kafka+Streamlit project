@@ -1,0 +1,299 @@
+# Real-Time Ad Click Prediction System (Kafka + River + Streamlit)
+
+## Overview
+
+This project implements a real-time machine learning pipeline for ad click prediction using:
+
+* Kafka for data streaming
+* River for online (incremental) machine learning
+* Streamlit for live dashboard visualization
+
+The system simulates a clickstream environment where data flows continuously and models update in real time.
+
+---
+
+## Architecture
+
+```
+Producer (dataset)
+        ↓
+Kafka Topic: ad_clicks
+        ↓
+Consumer (online ML, multiple models)
+        ↓
+Kafka Topic: predictions
+        ↓
+Streamlit Dashboard
+```
+
+---
+
+## Project Structure
+
+```
+KafkaMLProject/
+│
+├── producer.py
+├── consumer.py
+├── dashboard.py
+└── README.md
+```
+
+---
+
+## Setup
+
+### 1. Create Virtual Environment
+
+```bash
+python -m venv river_env
+river_env\Scripts\activate
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install confluent-kafka river streamlit kafka-python datasets pandas
+pip install streamlit-autorefresh
+```
+
+---
+
+## Start Kafka (Docker)
+
+```bash
+docker run -d --name kafka -p 9092:9092 apache/kafka:latest
+```
+
+---
+
+## Dataset
+
+This project uses a click-through rate dataset from Hugging Face:
+
+```python
+from datasets import load_dataset
+dataset = load_dataset("reczoo/Criteo_x1", split="train[:1%]")
+```
+
+---
+
+## producer.py
+
+Streams dataset rows into Kafka.
+
+```python
+import json
+from confluent_kafka import Producer
+from datasets import load_dataset
+
+dataset = load_dataset("reczoo/Criteo_x1", split="train[:1%]")
+
+producer = Producer({'bootstrap.servers': 'localhost:9092'})
+
+for row in dataset:
+    if not isinstance(row, dict) or 'label' not in row:
+        continue
+
+    producer.produce("ad_clicks", value=json.dumps(row))
+    producer.poll(0)
+
+producer.flush()
+print("Data streaming complete.")
+```
+
+---
+
+## consumer.py (Multi-Model Online Learning)
+
+```python
+from confluent_kafka import Consumer, Producer
+from river import preprocessing, linear_model, naive_bayes, tree, metrics
+import json
+
+consumer = Consumer({
+    "bootstrap.servers": "localhost:9092",
+    "group.id": "river_group",
+    "auto.offset.reset": "earliest"
+})
+consumer.subscribe(["ad_clicks"])
+
+producer = Producer({
+    "bootstrap.servers": "localhost:9092"
+})
+
+models = {
+    "log_reg": preprocessing.StandardScaler() | linear_model.LogisticRegression(),
+    "naive_bayes": naive_bayes.GaussianNB(),
+    "hoeffding_tree": tree.HoeffdingTreeClassifier()
+}
+
+metrics_dict = {name: metrics.LogLoss() for name in models}
+
+print("Starting online training...")
+
+count = 0
+
+while True:
+    msg = consumer.poll(1.0)
+    if msg is None:
+        continue
+
+    try:
+        row = json.loads(msg.value().decode("utf-8"))
+    except:
+        continue
+
+    if not isinstance(row, dict):
+        continue
+
+    y = row.pop("label")
+    x = row
+
+    results = {}
+
+    for name, model in models.items():
+        y_pred = model.predict_one(x)
+
+        if y_pred is None:
+            y_pred = 0.5
+
+        metrics_dict[name].update(y, y_pred)
+        model.learn_one(x, y)
+
+        results[name] = {
+            "y_pred": float(y_pred),
+            "logloss": float(metrics_dict[name].get())
+        }
+
+    producer.produce(
+        "predictions",
+        value=json.dumps(results).encode("utf-8")
+    )
+
+    count += 1
+
+    if count % 50 == 0:
+        print(f"Processed {count} rows")
+
+    if count >= 500:
+        break
+
+consumer.close()
+producer.flush()
+
+print("Online training completed!")
+```
+
+---
+
+## dashboard.py
+
+```python
+import streamlit as st
+from confluent_kafka import Consumer
+import json
+from streamlit_autorefresh import st_autorefresh
+
+st_autorefresh(interval=2000, key="refresh")
+
+consumer = Consumer({
+    "bootstrap.servers": "localhost:9092",
+    "group.id": "dashboard_group",
+    "auto.offset.reset": "latest"
+})
+consumer.subscribe(["predictions"])
+
+st.title("Real-Time Model Comparison")
+
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+msg = consumer.poll(0.5)
+
+if msg:
+    try:
+        data = json.loads(msg.value().decode("utf-8"))
+        st.session_state.history.append(data)
+    except:
+        pass
+
+if st.session_state.history:
+    latest = st.session_state.history[-1]
+
+    cols = st.columns(len(latest))
+
+    for i, (model, vals) in enumerate(latest.items()):
+        cols[i].metric(
+            model,
+            round(vals["y_pred"], 4),
+            delta=f"LogLoss {round(vals['logloss'], 4)}"
+        )
+else:
+    st.write("Waiting for data...")
+```
+
+---
+
+## Running the System
+
+Open three terminals in the project directory:
+
+### Terminal 1 — Producer
+
+```bash
+python producer.py
+```
+
+### Terminal 2 — Consumer
+
+```bash
+python consumer.py
+```
+
+### Terminal 3 — Dashboard
+
+```bash
+streamlit run dashboard.py
+```
+
+---
+
+## Features
+
+* Real-time data streaming using Kafka
+* Online machine learning with River
+* Multiple models trained simultaneously
+* Live performance comparison dashboard
+* Streaming-first architecture
+
+---
+
+## Key Concepts
+
+* Online learning (incremental updates per sample)
+* Streaming data pipelines
+* Concept drift readiness
+* Real-time model evaluation
+
+---
+
+## Future Improvements
+
+* Drift detection (e.g. ADWIN)
+* Sliding window metrics
+* Automatic model selection
+* Enhanced visualizations (charts, time series)
+* Model persistence
+
+---
+
+## Summary
+
+This project demonstrates an end-to-end streaming machine learning system combining:
+
+* Data engineering (Kafka)
+* Machine learning (River)
+* Visualization (Streamlit)
+
+It reflects real-world architectures used in ad-tech, recommendation systems, and fraud detection.
