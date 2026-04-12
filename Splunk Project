@@ -1,0 +1,192 @@
+# Splunk Server Metrics Analysis (Synthetic Data)
+
+## Overview
+
+This project demonstrates exploratory data analysis (EDA) and basic anomaly detection using Splunk Enterprise. Synthetic server metrics are generated directly within SPL to simulate real-world monitoring data.
+
+---
+
+## Prerequisites
+
+* Installed instance of Splunk Enterprise
+* Access to the Search & Reporting app
+
+---
+
+## Step-by-Step Instructions
+
+### Step 1: Launch Splunk Enterprise
+
+1. Open your browser
+2. Navigate to:
+
+   ```
+   http://localhost:8000
+   ```
+3. Log in with your Splunk credentials
+4. Click on **Search & Reporting**
+
+---
+
+### Step 2: Open the Search Interface
+
+* Locate the search bar at the top of the page
+* This is where SPL queries will be executed
+
+---
+
+### Step 3: Generate Synthetic Data
+
+Paste the following SPL into the search bar:
+
+```spl
+| makeresults count=72
+| streamstats count as seq
+| eval _time=relative_time(now(), "-" . (72 - seq) . "h")
+| eval host=case(
+    seq <= 24, "server01",
+    seq <= 48, "server02",
+    1=1, "server03"
+)
+| eval cpu_percent=50 + ((seq-1)%10)
+| eval mem_percent=60 + ((seq-1)%8)
+| eval disk_percent=70 + ((seq-1)%6)
+| table _time, host, cpu_percent, mem_percent, disk_percent
+```
+
+Then:
+
+* Press **Enter** or click **Search**
+
+---
+
+### Step 4: Verify the Output
+
+You should see:
+
+* 72 events (rows)
+* 3 hosts: `server01`, `server02`, `server03`
+* Fields:
+
+  * `_time`
+  * `cpu_percent`
+  * `mem_percent`
+  * `disk_percent`
+
+---
+
+### Step 5: Create CPU Visualization
+
+Run:
+
+```spl
+| makeresults count=72
+| streamstats count as seq
+| eval _time=relative_time(now(), "-" . (72 - seq) . "h")
+| eval host=case(seq<=24,"server01",seq<=48,"server02",1=1,"server03")
+| eval cpu_percent=50+((seq-1)%10)
+| timechart avg(cpu_percent) by host
+```
+
+Then:
+
+1. Click **Visualization**
+2. Select **Line Chart**
+
+---
+
+### Step 6: Create Memory and Disk Visualizations
+
+Repeat with:
+
+#### Memory
+
+```spl
+... | timechart avg(mem_percent) by host
+```
+
+#### Disk
+
+```spl
+... | timechart avg(disk_percent) by host
+```
+
+---
+
+### Step 7: Generate Summary Statistics
+
+```spl
+| makeresults count=72
+| streamstats count as seq
+| eval _time=relative_time(now(), "-" . (72 - seq) . "h")
+| eval host=case(seq<=24,"server01",seq<=48,"server02",1=1,"server03")
+| eval cpu_percent=50+((seq-1)%10)
+| stats avg(cpu_percent) min(cpu_percent) max(cpu_percent) by host
+```
+
+---
+
+### Step 8: Add Rule-Based Anomaly Flags
+
+```spl
+| makeresults count=72
+| streamstats count as seq
+| eval _time=relative_time(now(), "-" . (72 - seq) . "h")
+| eval host=case(seq<=24,"server01",seq<=48,"server02",1=1,"server03")
+| eval cpu_percent=50+((seq-1)%10)
+| eval mem_percent=60+((seq-1)%8)
+| eval disk_percent=70+((seq-1)%6)
+| eval high_cpu=if(cpu_percent>58,1,0)
+| eval high_mem=if(mem_percent>65,1,0)
+| eval high_disk=if(disk_percent>72,1,0)
+| table _time, host, cpu_percent, mem_percent, disk_percent, high_cpu, high_mem, high_disk
+```
+
+---
+
+### Step 9: Create Dashboard
+
+For each visualization:
+
+1. Click **Save As → Dashboard Panel**
+2. Choose or create a dashboard
+3. Add panel titles such as:
+
+   * CPU Usage by Host
+   * Memory Usage by Host
+   * Disk Usage by Host
+4. Save
+
+---
+
+### Step 10: Arrange Dashboard
+
+1. Go to **Dashboards**
+2. Open your dashboard
+3. Click **Edit**
+4. Arrange panels as needed
+5. Save layout
+
+---
+
+## Result
+
+A dashboard displaying:
+
+* Time-series trends for CPU, memory, and disk usage
+* Comparison across multiple hosts
+* Highlighted high-usage events
+
+---
+
+## Limitations
+
+* Synthetic data is deterministic
+* No real-world variability or noise
+* Machine Learning Toolkit not used in this implementation
+
+---
+
+## License
+
+This project is intended for educational and portfolio use.
