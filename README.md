@@ -1508,5 +1508,133 @@ This program demonstrates:
 
 It serves as a foundational example of building an interactive Java console application.
 
+## Kafka
+
+```
+from kafka import KafkaConsumer, KafkaProducer
+import json
+import time
+import random
+
+def json_serializer(data):
+    return json.dumps(data).encode("utf-8")
+
+producer = KafkaProducer(
+    bootstrap_servers=['localhost:9092'],
+    value_serializer=json_serializer #formatting of produced data
+)
+
+def produce_message():
+    # Produce 10 messages
+    for _ in range(10):
+        message = {
+            'id': random.randint(1, 100), #set arbitrary ID for time being
+            'timestamp': time.time(),
+            'value': random.random() * 100
+        }
+        print(f"Sending: {message}")
+        producer.send("test-topic", message)
+        time.sleep(1)  # Wait 1 second between sends
+
+consumer = KafkaConsumer(
+    "test-topic",
+    bootstrap_servers='localhost:9092',
+    auto_offset_reset='earliest',  # Start reading from the beginning if no offset is set
+    group_id="test-group",
+    value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+)
+
+def consume_messages():
+    for message in consumer:
+        print(f"Received: {message.value}")
+
+if __name__ == "__main__": #actually allows code to execute
+    produce_message() # execute the functions we wanted.
+    producer.flush()  # Ensure all messages are sent
+    consume_messages()
+```
+#Apache Kafka
+```
+#Importing the important libraries to code
+
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+from datetime import datetime, timedelta
+import pandas as pd
+
+def extract_data():
+    data = {'Name': ['Alice', 'Bob', 'Charlie'], 'Age': [25, 30, 35]} #dummy data
+    df = pd.DataFrame(data) #storage format
+    print("Data Extracted:\n", df)
+    return df
+
+def transform_data(df):
+    df['Age'] = df['Age'] + 5 #modify data
+    print("Data Transformed:\n", df)
+    return df
+
+def load_data(df):
+    print("Data Loaded to Database:\n", df)
+#loads data by printing it out for the console
+
+dag = DAG(
+    'test_dag',
+    description='DAG to test my understanding',
+    schedulel=timedelta(days=1),  # How often we should refresh this
+    start_date=datetime(2025, 3, 29), #initiation time
+    catchup=False,  # Avoid running missed schedules
+    default_args={
+        'retries': 3,  # Can set retries since API may not connect first time
+        'retry_delay': timedelta(minutes=5),  # Delay retries to avoid triggering server defenses over one too many requests
+    }
+)
+# runs a custom Python function or callable object as a single task inside a workflow pipeline
+extract_task = PythonOperator(
+    task_id='extract_data',
+    python_callable=extract_data,
+    dag=dag,
+)
+
+transform_task = PythonOperator(
+    task_id='transform_data',
+    python_callable=transform_data,
+    op_args=[extract_task.output],  # Pass the output of the extract task
+    dag=dag,
+)
+
+load_task = PythonOperator(
+    task_id='load_data',
+    python_callable=load_data,
+    op_args=[transform_task.output],  # Pass the output of the transform task
+    dag=dag,
+)
 
 
+#set sequence of tasks, aka dependencies
+extract_task >> transform_task >> load_task
+```
+#Langchain AI
+```
+import streamlit as st
+from langchain.llms import OpenAI
+
+st.title('First Langchain App')
+#Access LLM via API to generate responses
+openai_api_key = st.sidebar.text_input('[This would be your key]')
+#below is the function that takes input text for responses
+def generate_response(input_text):
+  llm = OpenAI(temperature=0.7, openai_api_key=openai_api_key)
+  st.info(llm(input_text))
+
+with st.form('my_form'):
+#create the text box, second argument is a deletable stock question
+  text = st.text_area('Enter text:', 'What are the three key pieces of advice for learning how to code?')
+# submit button
+  submitted = st.form_submit_button('Submit')
+#validating if credentials work
+  if not openai_api_key.startswith('sk-'):
+    st.warning('Please enter your OpenAI API key!', icon='⚠')
+  if submitted and openai_api_key.startswith('sk-'):
+    generate_response(text)
+
+```
